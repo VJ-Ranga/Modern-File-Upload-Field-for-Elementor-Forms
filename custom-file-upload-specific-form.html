@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Custom File Upload for Specific Form</title>
+    <style>
+        /* Scoped to specific form by ID */
+        #my-upload-form .custom-upload-area {
+            border: 1px solid #e0e0e0;
+            border-radius: 12px;
+            padding: 30px 20px;
+            text-align: center;
+            cursor: pointer;
+            position: relative;
+            transition: all 0.3s ease;
+            background-color: #ffffff;
+            margin-bottom: 10px;
+        }
+        
+        #my-upload-form .custom-upload-area:hover {
+            border-color: #ccc;
+        }
+        
+        #my-upload-form .upload-icon {
+            color: #aaa;
+            font-size: 24px;
+            margin-bottom: 10px;
+        }
+        
+        #my-upload-form .upload-text {
+            color: var(--e-global-color-text, #333);
+            font-family: Arial, sans-serif;
+            font-size: 14px;
+            margin-bottom: 5px;
+        }
+        
+        #my-upload-form .upload-subtext {
+            color: #999;
+            font-family: Arial, sans-serif;
+            font-size: 12px;
+        }
+        
+        /* File list styling */
+        #my-upload-form .selected-files {
+            text-align: left;
+            margin-top: 10px;
+            max-height: 100px;
+            overflow-y: auto;
+            padding: 0 10px;
+        }
+        
+        #my-upload-form .file-item {
+            font-size: 12px;
+            color: #666;
+            margin: 4px 0;
+        }
+        
+        /* File information text styling */
+        #my-upload-form .file-info-text {
+            font-family: Arial, sans-serif;
+            font-size: 13px;
+            color: #666;
+            line-height: 1.4;
+            margin-top: 15px;
+        }
+        
+        #my-upload-form .file-info-text strong {
+            font-weight: bold;
+            color: var(--e-global-color-text, #333);
+        }
+        
+        /* Hide the original file input in this specific form */
+        #my-upload-form .elementor-field-type-upload input[type="file"] {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <!-- Add this code to your Elementor Custom HTML widget -->
+    <div class="custom-upload-area" id="my-form-upload-trigger">
+        <div class="upload-icon">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M19 16V19C19 19.5304 18.7893 20.0391 18.4142 20.4142C18.0391 20.7893 17.5304 21 17 21H7C6.46957 21 5.96086 20.7893 5.58579 20.4142C5.21071 20.0391 5 19.5304 5 19V16" stroke="#AAAAAA" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                <path d="M12 3V16M12 3L7 8M12 3L17 8" stroke="#AAAAAA" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+        </div>
+        <div class="upload-text">Click or drag files to this area to upload.</div>
+        <div class="upload-subtext">You can upload up to 25 files.</div>
+        <div class="selected-files" id="my-form-files-list"></div>
+    </div>
+
+    <!-- File information text -->
+    <div class="file-info-text">
+        <p><strong>Accepted file types:</strong> .xlxs, .jpg, .jpeg, .doc, .docx, .pdf, .png</p>
+        <p><strong>Max Upload:</strong> 25mb.</p>
+        <p><strong>Please Note:</strong> If you encounter upload issues, please remove all selected files and try uploading again. To modify your selection, simply choose all desired files again.</p>
+    </div>
+
+    <script>
+    // Add this script to your page
+    document.addEventListener('DOMContentLoaded', function() {
+        // Only target the specific form
+        const formElement = document.getElementById('my-upload-form');
+        
+        // Only proceed if the target form exists
+        if (!formElement) return;
+        
+        const customUploadArea = document.getElementById('my-form-upload-trigger');
+        const fileInput = formElement.querySelector('.elementor-field-type-upload input[type="file"]');
+        const selectedFilesList = document.getElementById('my-form-files-list');
+        
+        if (customUploadArea && fileInput) {
+            // Trigger file input when custom area is clicked
+            customUploadArea.addEventListener('click', function() {
+                fileInput.click();
+            });
+            
+            // Update text and show file names when files are selected
+            fileInput.addEventListener('change', function() {
+                const fileCount = this.files.length;
+                
+                // Update main text
+                if (fileCount > 0) {
+                    customUploadArea.querySelector('.upload-text').textContent = fileCount === 1 
+                        ? '1 file selected' 
+                        : `${fileCount} files selected`;
+                    
+                    // Display file names
+                    selectedFilesList.innerHTML = '';
+                    for (let i = 0; i < this.files.length; i++) {
+                        const fileItem = document.createElement('div');
+                        fileItem.className = 'file-item';
+                        fileItem.textContent = this.files[i].name;
+                        selectedFilesList.appendChild(fileItem);
+                    }
+                } else {
+                    customUploadArea.querySelector('.upload-text').textContent = 'Click or drag files to this area to upload.';
+                    selectedFilesList.innerHTML = '';
+                }
+            });
+            
+            // Handle drag and drop
+            ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+                customUploadArea.addEventListener(eventName, preventDefaults, false);
+            });
+            
+            function preventDefaults(e) {
+                e.preventDefault();
+                e.stopPropagation();
+            }
+            
+            ['dragenter', 'dragover'].forEach(eventName => {
+                customUploadArea.addEventListener(eventName, highlight, false);
+            });
+            
+            ['dragleave', 'drop'].forEach(eventName => {
+                customUploadArea.addEventListener(eventName, unhighlight, false);
+            });
+            
+            function highlight() {
+                customUploadArea.style.borderColor = '#666';
+                customUploadArea.style.backgroundColor = '#f7f7f7';
+            }
+            
+            function unhighlight() {
+                customUploadArea.style.borderColor = '#e0e0e0';
+                customUploadArea.style.backgroundColor = '#ffffff';
+            }
+            
+            customUploadArea.addEventListener('drop', handleDrop, false);
+            
+            function handleDrop(e) {
+                const dt = e.dataTransfer;
+                const files = dt.files;
+                fileInput.files = files;
+                
+                // Trigger change event
+                const event = new Event('change');
+                fileInput.dispatchEvent(event);
+            }
+        }
+    });
+    </script>
+</body>
+</html>
