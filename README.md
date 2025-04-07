@@ -2,7 +2,8 @@
 
 A customizable, modern file upload component for Elementor forms with drag-and-drop functionality that displays selected filenames.
 
-![Preview of the custom file upload field](https://placeholder-image.jpg)
+![Preview of the custom file upload field](File-Upload-Field-for-Elementor-Forms.png)
+
 
 ## Features
 
